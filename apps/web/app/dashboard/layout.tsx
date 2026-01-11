@@ -1,10 +1,13 @@
 import { ReactNode } from "react";
+import Image from "next/image";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
+import { LogoutButton } from "@/components/dashboard/logout-button";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Menu } from "lucide-react";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
@@ -12,8 +15,19 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r bg-background">
         <div className="p-4">
-          <div className="text-lg font-semibold">Order Tracking</div>
-          <div className="text-sm text-muted-foreground">Dashboard</div>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={32}
+              height={32}
+              className="dark:invert"
+            />
+            <div>
+              <div className="text-lg font-semibold">Order Tracking</div>
+              <div className="text-sm text-muted-foreground">Dashboard</div>
+            </div>
+          </div>
         </div>
         <Separator />
         <ScrollArea className="flex-1">
@@ -22,11 +36,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
         <div className="p-4">
           <Separator className="mb-3" />
-          <form action="/api/auth/logout" method="post">
-            <Button type="submit" variant="outline" className="w-full">
-              Logout
-            </Button>
-          </form>
+          <LogoutButton className="w-full" />
         </div>
       </aside>
 
@@ -43,9 +53,23 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-72">
+                <VisuallyHidden>
+                  <SheetTitle>Navigation Menu</SheetTitle>
+                </VisuallyHidden>
                 <div className="p-4">
-                  <div className="text-lg font-semibold">Order Tracking</div>
-                  <div className="text-sm text-muted-foreground">Dashboard</div>
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src="/logo.png"
+                      alt="Logo"
+                      width={32}
+                      height={32}
+                      className="dark:invert"
+                    />
+                    <div>
+                      <div className="text-lg font-semibold">Order Tracking</div>
+                      <div className="text-sm text-muted-foreground">Dashboard</div>
+                    </div>
+                  </div>
                 </div>
                 <Separator />
                 <ScrollArea className="h-[calc(100vh-140px)]">
@@ -53,11 +77,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 </ScrollArea>
                 <div className="p-4">
                   <Separator className="mb-3" />
-                  <form action="/api/auth/logout" method="post">
-                    <Button type="submit" variant="outline" className="w-full">
-                      Logout
-                    </Button>
-                  </form>
+                  <LogoutButton className="w-full" />
                 </div>
               </SheetContent>
             </Sheet>

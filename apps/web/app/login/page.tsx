@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -12,8 +13,8 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/dashboard";
 
-  const [email, setEmail] = useState("admin@example.com");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,9 +45,18 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Sign in</CardTitle>
-          <CardDescription>Login to access your dashboard</CardDescription>
+        <CardHeader className="space-y-4">
+          <div className="flex justify-center">
+            <Image
+              src="/logo.png"
+              alt="Order Tracking"
+              width={48}
+              height={48}
+              className="dark:invert"
+            />
+          </div>
+          <CardTitle className="text-center">Sign in</CardTitle>
+          <CardDescription className="text-center">Login to access your dashboard</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">

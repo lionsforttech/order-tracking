@@ -1,0 +1,72 @@
+/**
+ * Domain types matching backend Prisma schema
+ * Keep in sync with API responses
+ */
+
+export type OrderStatus =
+  | "DRAFT"
+  | "PLACED"
+  | "DISPATCHED"
+  | "IN_TRANSIT"
+  | "DELIVERED"
+  | "CANCELED";
+
+export interface Supplier {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Forwarder {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderItem {
+  id: string;
+  orderId: string;
+  sku: string;
+  itemName: string;
+  quantity: number;
+  price: number;
+  total: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Invoice {
+  id: string;
+  orderId: string;
+  invoiceNumber: string;
+  amount: number;
+  issueDate: string;
+  dueDate: string | null;
+  paidDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Order {
+  id: string;
+  refNumber: string;
+  supplierId: string;
+  forwarderId: string;
+  status: OrderStatus;
+  orderDate: string | null;
+  dispatchDate: string | null;
+  estimatedDeliveryDate: string | null;
+  actualDeliveryDate: string | null;
+  shipmentName: string | null;
+  comments: string | null;
+  createdAt: string;
+  updatedAt: string;
+
+  // Relations
+  supplier: Supplier;
+  forwarder: Forwarder;
+  items: OrderItem[];
+  invoices: Invoice[];
+}
