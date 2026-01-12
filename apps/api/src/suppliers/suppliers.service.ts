@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
@@ -7,8 +7,27 @@ import { UpdateSupplierDto } from './dto/update-supplier.dto';
 export class SuppliersService {
   constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return this.prisma.supplier.findMany({ orderBy: { createdAt: 'desc' } });
+  async findAll(page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    
+    const [data, total] = await Promise.all([
+      this.prisma.supplier.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.supplier.count(),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string) {
@@ -17,12 +36,26 @@ export class SuppliersService {
     return supplier;
   }
 
-  create(dto: CreateSupplierDto) {
-    return this.prisma.supplier.create({ data: dto });
+  async create(dto: CreateSupplierDto) {
+    try {
+      return await this.prisma.supplier.create({ data: dto });
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new ConflictException('A supplier with this name already exists');
+      }
+      throw error;
+    }
   }
 
-  update(id: string, dto: UpdateSupplierDto) {
-    return this.prisma.supplier.update({ where: { id }, data: dto });
+  async update(id: string, dto: UpdateSupplierDto) {
+    try {
+      return await this.prisma.supplier.update({ where: { id }, data: dto });
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new ConflictException('A supplier with this name already exists');
+      }
+      throw error;
+    }
   }
 
   remove(id: string) {

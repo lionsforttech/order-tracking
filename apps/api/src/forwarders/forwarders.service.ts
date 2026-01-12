@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateForwarderDto } from './dto/create-forwarder.dto';
 import { UpdateForwarderDto } from './dto/update-forwarder.dto';
@@ -7,8 +7,27 @@ import { UpdateForwarderDto } from './dto/update-forwarder.dto';
 export class ForwardersService {
   constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return this.prisma.forwarder.findMany({ orderBy: { createdAt: 'desc' } });
+  async findAll(page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    
+    const [data, total] = await Promise.all([
+      this.prisma.forwarder.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.forwarder.count(),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string) {
@@ -17,12 +36,26 @@ export class ForwardersService {
     return forwarder;
   }
 
-  create(dto: CreateForwarderDto) {
-    return this.prisma.forwarder.create({ data: dto });
+  async create(dto: CreateForwarderDto) {
+    try {
+      return await this.prisma.forwarder.create({ data: dto });
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new ConflictException('A forwarder with this name already exists');
+      }
+      throw error;
+    }
   }
 
-  update(id: string, dto: UpdateForwarderDto) {
-    return this.prisma.forwarder.update({ where: { id }, data: dto });
+  async update(id: string, dto: UpdateForwarderDto) {
+    try {
+      return await this.prisma.forwarder.update({ where: { id }, data: dto });
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new ConflictException('A forwarder with this name already exists');
+      }
+      throw error;
+    }
   }
 
   remove(id: string) {

@@ -16,14 +16,14 @@ export async function GET(req: NextRequest) {
     const page = searchParams.get('page') || '1';
     const limit = searchParams.get('limit') || '10';
     
-    const res = await fetch(`${API_URL}/forwarders?page=${page}&limit=${limit}`, {
+    const res = await fetch(`${API_URL}/suppliers?page=${page}&limit=${limit}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     if (!res.ok) {
       const error = await res.text();
       return NextResponse.json(
-        { message: error || "Failed to fetch forwarders" },
+        { message: error || "Failed to fetch suppliers" },
         { status: res.status }
       );
     }
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Failed to fetch forwarders:", error);
+    console.error("Failed to fetch suppliers:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const res = await fetch(`${API_URL}/forwarders`, {
+    const res = await fetch(`${API_URL}/suppliers`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     if (!res.ok) {
       const error = await res.text();
       return NextResponse.json(
-        { message: error || "Failed to create forwarder" },
+        { message: error || "Failed to create supplier" },
         { status: res.status }
       );
     }
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     const data = await res.json();
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    console.error("Failed to create forwarder:", error);
+    console.error("Failed to create supplier:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

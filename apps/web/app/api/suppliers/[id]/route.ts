@@ -3,7 +3,10 @@ import { cookies } from "next/headers";
 
 const API_URL = process.env.API_URL || "http://localhost:3001";
 
-export async function GET(req: NextRequest) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
 
@@ -12,46 +15,11 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const { searchParams } = new URL(req.url);
-    const page = searchParams.get('page') || '1';
-    const limit = searchParams.get('limit') || '10';
-    
-    const res = await fetch(`${API_URL}/forwarders?page=${page}&limit=${limit}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) {
-      const error = await res.text();
-      return NextResponse.json(
-        { message: error || "Failed to fetch forwarders" },
-        { status: res.status }
-      );
-    }
-
-    const data = await res.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Failed to fetch forwarders:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(req: NextRequest) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
-
-  if (!token) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
+    const { id } = await params;
     const body = await req.json();
 
-    const res = await fetch(`${API_URL}/forwarders`, {
-      method: "POST",
+    const res = await fetch(`${API_URL}/suppliers/${id}`, {
+      method: "PATCH",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -62,15 +30,54 @@ export async function POST(req: NextRequest) {
     if (!res.ok) {
       const error = await res.text();
       return NextResponse.json(
-        { message: error || "Failed to create forwarder" },
+        { message: error || "Failed to update supplier" },
         { status: res.status }
       );
     }
 
     const data = await res.json();
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Failed to create forwarder:", error);
+    console.error("Failed to update supplier:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+
+  if (!token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { id } = await params;
+
+    const res = await fetch(`${API_URL}/suppliers/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.text();
+      return NextResponse.json(
+        { message: error || "Failed to delete supplier" },
+        { status: res.status }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Failed to delete supplier:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

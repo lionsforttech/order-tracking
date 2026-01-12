@@ -5,16 +5,35 @@ import { Forwarder } from "@/types/forwarders";
 import { ForwardersTable } from "@/components/forwarders/forwarders-table";
 import { ForwarderDialog } from "@/components/forwarders/forwarder-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/ui/pagination";
+
+interface PaginatedResponse {
+  data: Forwarder[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
 
 export default function ForwardersPage() {
   const [forwarders, setForwarders] = useState<Forwarder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [meta, setMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0,
+  });
 
-  const fetchForwarders = useCallback(async () => {
+  const fetchForwarders = useCallback(async (currentPage = page) => {
     try {
       setLoading(true);
-      const res = await fetch("/api/forwarders", {
+      const res = await fetch(`/api/forwarders?page=${currentPage}&limit=${limit}`, {
         cache: "no-store",
       });
 
@@ -22,15 +41,16 @@ export default function ForwardersPage() {
         throw new Error("Failed to fetch forwarders");
       }
 
-      const data = await res.json();
-      setForwarders(data);
+      const response: PaginatedResponse = await res.json();
+      setForwarders(response.data);
+      setMeta(response.meta);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, limit]);
 
   useEffect(() => {
     fetchForwarders();
@@ -73,6 +93,19 @@ export default function ForwardersPage() {
       </div>
 
       <ForwardersTable forwarders={forwarders} onUpdate={fetchForwarders} />
+      
+      {meta.total > 0 && (
+        <Pagination
+          currentPage={meta.page}
+          totalPages={meta.totalPages}
+          totalItems={meta.total}
+          itemsPerPage={meta.limit}
+          onPageChange={(newPage) => {
+            setPage(newPage);
+            fetchForwarders(newPage);
+          }}
+        />
+      )}
     </div>
   );
 }

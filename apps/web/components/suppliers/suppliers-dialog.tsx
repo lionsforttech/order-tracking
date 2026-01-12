@@ -15,22 +15,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Pencil } from "lucide-react";
-import { Forwarder } from "@/types/forwarders";
+import { Supplier } from "@/types/suppliers";
 
-interface ForwarderDialogProps {
-  forwarder?: Forwarder;
+interface SupplierDialogProps {
+  supplier?: Supplier;
   trigger?: React.ReactNode;
   onSuccess?: () => void;
 }
 
-export function ForwarderDialog({ forwarder, trigger, onSuccess }: ForwarderDialogProps) {
+export function SupplierDialog({ supplier, trigger, onSuccess }: SupplierDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [name, setName] = useState(forwarder?.name || "");
+  const [name, setName] = useState(supplier?.name || "");
 
-  const isEdit = !!forwarder;
+  const isEdit = !!supplier;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,7 +38,7 @@ export function ForwarderDialog({ forwarder, trigger, onSuccess }: ForwarderDial
     setError(null);
 
     try {
-      const url = isEdit ? `/api/forwarders/${forwarder.id}` : "/api/forwarders";
+      const url = isEdit ? `/api/suppliers/${supplier.id}` : "/api/suppliers";
       const method = isEdit ? "PATCH" : "POST";
 
       const res = await fetch(url, {
@@ -48,8 +48,8 @@ export function ForwarderDialog({ forwarder, trigger, onSuccess }: ForwarderDial
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ message: 'Failed to save forwarder' }));
-        throw new Error(data.message || "Failed to save forwarder");
+        const data = await res.json().catch(() => ({ message: 'Failed to save supplier' }));
+        throw new Error(data.message || "Failed to save supplier");
       }
 
       setOpen(false);
@@ -68,25 +68,25 @@ export function ForwarderDialog({ forwarder, trigger, onSuccess }: ForwarderDial
         {trigger || (
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Add Forwarder
+            Add Supplier
           </Button>
         )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Edit Forwarder" : "Create Forwarder"}
+            {isEdit ? "Edit supplier" : "Create supplier"}
           </DialogTitle>
           <DialogDescription>
             {isEdit
-              ? "Update forwarder information"
-              : "Add a new freight forwarder"}
+              ? "Update supplier information"
+              : "Add a new freight supplier"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Forwarder Name</Label>
+              <Label htmlFor="name">Supplier Name</Label>
               <Input
                 id="name"
                 placeholder="e.g., DHL, FedEx, Maersk"
