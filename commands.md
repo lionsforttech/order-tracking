@@ -9,6 +9,7 @@
 `pnpm exec prisma studio --url="postgresql://app:app@localhost:5432/order_tracking?schema=public"`
 `pnpm approve-builds`
 `docker compose up -d`
+`npx prisma studio --url="postgresql://app:app@localhost:5432/order_tracking?schema=public"`
 
 ## Run Servers
 `pnpm dev`
@@ -18,3 +19,5 @@
 
 ### Frontend only
 `pnpm --filter web dev`
+
+`sudo rm -rf apps/api/dist && sudo chown -R $(whoami) apps/api`

@@ -11,7 +11,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, FileText, Download } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { InvoiceDialog } from "./invoice-dialog";
 import {
   AlertDialog,
@@ -80,6 +86,7 @@ export function InvoicesTable({ invoices, onUpdate }: InvoicesTableProps) {
             <TableHead>Invoice Number</TableHead>
             <TableHead>Order Ref</TableHead>
             <TableHead>Invoice Date</TableHead>
+            <TableHead>Documents</TableHead>
             <TableHead>Created</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -92,6 +99,36 @@ export function InvoicesTable({ invoices, onUpdate }: InvoicesTableProps) {
               </TableCell>
               <TableCell>{invoice.order.refNumber}</TableCell>
               <TableCell>{formatDate(invoice.invoiceDate)}</TableCell>
+              <TableCell>
+                {invoice.documents && invoice.documents.length > 0 ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <FileText className="h-4 w-4 mr-1" />
+                        {invoice.documents.length}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {invoice.documents.map((doc) => (
+                        <DropdownMenuItem
+                          key={doc.id}
+                          onClick={() => {
+                            window.open(
+                              `/api/invoices/${invoice.id}/documents/${doc.id}`,
+                              '_blank'
+                            );
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          {doc.originalName}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <span className="text-muted-foreground text-sm">—</span>
+                )}
+              </TableCell>
               <TableCell className="text-muted-foreground">
                 {formatDate(invoice.createdAt)}
               </TableCell>

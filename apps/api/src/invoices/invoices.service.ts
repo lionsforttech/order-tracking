@@ -31,6 +31,9 @@ export class InvoicesService {
               refNumber: true,
             },
           },
+          documents: {
+            orderBy: { createdAt: 'desc' },
+          },
         },
       }),
       this.prisma.invoice.count({ where }),

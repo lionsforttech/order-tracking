@@ -14,7 +14,6 @@ datasource db {
 enum OrderStatus {
   DRAFT
   PLACED
-  DISPATCHED
   IN_TRANSIT
   DELIVERED
   CANCELED
@@ -124,6 +123,8 @@ model Invoice {
 
   invoiceNumber String   @map("invoice_number")
   invoiceDate   DateTime? @map("invoice_date")
+  
+  documents     InvoiceDocument[]
 
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
@@ -134,4 +135,22 @@ model Invoice {
 
   // If you want 1-to-1 instead of 1-to-many:
   // @@unique([orderId])
+}
+
+model InvoiceDocument {
+  id           String   @id @default(uuid()) @db.Uuid
+  
+  invoiceId    String   @db.Uuid @map("invoice_id")
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  filename     String
+  originalName String   @map("original_name")
+  filepath     String
+  mimetype     String
+  size         Int
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+  
+  @@map("invoice_documents")
+  @@index([invoiceId])
 }

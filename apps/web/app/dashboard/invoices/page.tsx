@@ -61,6 +61,7 @@ export default function InvoicesPage() {
         page: page.toString(),
         limit: limit.toString(),
         ...(debouncedSearch && { search: debouncedSearch }),
+        _t: Date.now().toString(), // Cache buster
       });
       const res = await fetch(`/api/invoices?${params}`, {
         cache: "no-store",
