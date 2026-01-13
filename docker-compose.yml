@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: order-tracking-postgres
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: order_tracking
+    ports:
+      - "5432:5432"
+    volumes:
+      - order_tracking_pg:/var/lib/postgresql/data
+
+volumes:
+  order_tracking_pg:
