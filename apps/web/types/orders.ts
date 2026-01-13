@@ -37,16 +37,25 @@ export interface OrderItem {
   updatedAt: string;
 }
 
+export interface InvoiceDocument {
+  id: string;
+  invoiceId: string;
+  filename: string;
+  originalName: string;
+  filepath: string;
+  mimetype: string;
+  size: number;
+  createdAt: string;
+}
+
 export interface Invoice {
   id: string;
   orderId: string;
   invoiceNumber: string;
-  amount: number;
-  issueDate: string;
-  dueDate: string | null;
-  paidDate: string | null;
+  invoiceDate: string | null;
   createdAt: string;
   updatedAt: string;
+  documents?: InvoiceDocument[];
 }
 
 export interface Order {
