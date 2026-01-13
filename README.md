@@ -1395,7 +1395,6 @@ rm -rf apps/web/.next
 ### Getting Help
 
 - Check [commands.md](./commands.md) for useful commands
-- Review [api.md](./api.md) for API endpoint details
 - Check browser console for client-side errors
 - Check backend terminal for server-side errors
 - Use Prisma Studio to inspect database: `npx prisma studio`
@@ -1404,14 +1403,10 @@ rm -rf apps/web/.next
 
 ## License
 
-This project is licensed under the ISC License.
+This project is licensed under the MIT License.
 
 ---
 
 ## Support
 
 For issues, questions, or contributions, please contact the development team or open an issue in the repository.
-
----
-
-**Built with ❤️ using modern web technologies**
