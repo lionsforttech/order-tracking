@@ -109,8 +109,8 @@ export function OrdersTable({ orders, onUpdate, onEdit }: OrdersTableProps) {
           {orders.map((order) => (
             <TableRow key={order.id}>
               <TableCell className="font-medium">{order.refNumber}</TableCell>
-              <TableCell>{order.supplier.name}</TableCell>
-              <TableCell>{order.forwarder.name}</TableCell>
+              <TableCell>{order.supplier?.name || "—"}</TableCell>
+              <TableCell>{order.forwarder?.name || "—"}</TableCell>
               <TableCell>
                 <OrderStatusBadge status={order.status} />
               </TableCell>
@@ -139,7 +139,7 @@ export function OrdersTable({ orders, onUpdate, onEdit }: OrdersTableProps) {
                         setSelectedOrder(order);
                         setInvoiceDialogOpen(true);
                       }}
-                      disabled={!order.invoices || order.invoices.length === 0}
+                      disabled={!order.invoices || !Array.isArray(order.invoices) || order.invoices.length === 0}
                     >
                       <FileText className="mr-2 h-4 w-4" />
                       View Invoice
@@ -188,30 +188,35 @@ export function OrdersTable({ orders, onUpdate, onEdit }: OrdersTableProps) {
             <AlertDialogTitle>Invoice Details</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-3 pt-2">
-                {selectedOrder?.invoices && selectedOrder.invoices.length > 0 ? (
+                {selectedOrder?.invoices && Array.isArray(selectedOrder.invoices) && selectedOrder.invoices.length > 0 ? (
                   <>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="font-medium">Invoice Number:</div>
-                      <div>{selectedOrder.invoices[0].invoiceNumber}</div>
+                      <div>{selectedOrder.invoices[0]?.invoiceNumber || "—"}</div>
                       
                       <div className="font-medium">Invoice Date:</div>
-                      <div>{formatDate(selectedOrder.invoices[0].invoiceDate)}</div>
+                      <div>{formatDate(selectedOrder.invoices[0]?.invoiceDate)}</div>
                       
                       <div className="font-medium">Order Ref:</div>
                       <div>{selectedOrder.refNumber}</div>
                       
                       <div className="font-medium">Created:</div>
-                      <div>{formatDate(selectedOrder.invoices[0].createdAt)}</div>
+                      <div>{formatDate(selectedOrder.invoices[0]?.createdAt)}</div>
                     </div>
                     
-                    {selectedOrder.invoices[0].documents && selectedOrder.invoices[0].documents.length > 0 && (
+                    {selectedOrder.invoices[0]?.documents && Array.isArray(selectedOrder.invoices[0].documents) && selectedOrder.invoices[0].documents.length > 0 && (
                       <div className="pt-2 border-t">
                         <div className="font-medium text-sm mb-2">Documents ({selectedOrder.invoices[0].documents.length}):</div>
                         <div className="space-y-1">
                           {selectedOrder.invoices[0].documents.map((doc: any) => (
                             <button
                               key={doc.id}
-                              onClick={() => window.open(`/api/invoices/${selectedOrder.invoices[0].id}/documents/${doc.id}`, '_blank')}
+                              onClick={() => {
+                                const invoiceId = selectedOrder?.invoices?.[0]?.id;
+                                if (invoiceId) {
+                                  window.open(`/api/invoices/${invoiceId}/documents/${doc.id}`, '_blank');
+                                }
+                              }}
                               className="flex items-center gap-2 text-sm hover:bg-gray-100 p-2 rounded w-full text-left"
                             >
                               <Download className="h-4 w-4 text-muted-foreground" />
