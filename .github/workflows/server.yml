@@ -37,9 +37,13 @@ jobs:
             echo "📦 Installing dependencies..."
             pnpm install --frozen-lockfile || pnpm install
             
+            # Generate Prisma Client in root (for workspace)
+            echo "🔧 Generating Prisma Client..."
+            cd /www/wwwroot/ots.lionsfortco.com/order-tracking/apps/api
+            pnpm exec prisma generate
+            
             # Apply database migrations
             echo "🗄️  Applying migrations..."
-            cd /www/wwwroot/ots.lionsfortco.com/order-tracking/apps/api
             pnpm exec prisma migrate deploy || echo "No migrations to apply"
             pnpm exec prisma generate
             
