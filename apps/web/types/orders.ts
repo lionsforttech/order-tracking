@@ -7,6 +7,7 @@ export type OrderStatus =
   | "DRAFT"
   | "PLACED"
   | "DISPATCHED"
+  | "SHIPPED"
   | "IN_TRANSIT"
   | "DELIVERED"
   | "CANCELED";
