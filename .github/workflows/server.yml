@@ -88,19 +88,30 @@ jobs:
             sleep 5
             pm2 list
             
-            # Verify services are running
-            if ! pm2 jlist | grep -q '"pm2_env":{"status":"online","name":"order-tracking-api"'; then
-              echo "❌ API failed to start"
-              pm2 logs order-tracking-api --lines 20 --nostream
+            # Verify services are running using simpler check
+            API_STATUS=$(pm2 jlist | grep -o '"name":"order-tracking-api"' | wc -l)
+            WEB_STATUS=$(pm2 jlist | grep -o '"name":"order-tracking-web"' | wc -l)
+            
+            if [ "$API_STATUS" -eq 0 ]; then
+              echo "❌ API process not found"
+              pm2 logs order-tracking-api --lines 20 --nostream || true
               exit 1
             fi
             
-            if ! pm2 jlist | grep -q '"pm2_env":{"status":"online","name":"order-tracking-web"'; then
-              echo "❌ Web failed to start"
-              pm2 logs order-tracking-web --lines 20 --nostream
+            if [ "$WEB_STATUS" -eq 0 ]; then
+              echo "❌ Web process not found"
+              pm2 logs order-tracking-web --lines 20 --nostream || true
+              exit 1
+            fi
+            
+            # Check if processes are actually online (not errored/stopped)
+            if pm2 list | grep -E "order-tracking-(api|web)" | grep -qE "(stopped|errored|stopping)"; then
+              echo "❌ One or more services failed to start properly"
+              echo "📋 Recent logs:"
+              pm2 logs --lines 30 --nostream || true
               exit 1
             fi
             
             echo "✅ Deployment complete!"
             echo "📊 Services status:"
-            pm2 jlist | grep -E '(name|status|pm_uptime)' | head -20
+            pm2 list
