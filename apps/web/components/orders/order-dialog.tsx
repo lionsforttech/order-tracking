@@ -58,6 +58,7 @@ export function OrderDialog({
   const [createInvoice, setCreateInvoice] = useState(false);
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split("T")[0]);
+  const [invoiceFiles, setInvoiceFiles] = useState<File[]>([]);
 
   const [formData, setFormData] = useState({
     refNumber: "",
@@ -223,7 +224,7 @@ export function OrderDialog({
       // If creating order and createInvoice is checked, create invoice
       if (!order && createInvoice && invoiceNumber.trim()) {
         try {
-          await fetch("/api/invoices", {
+          const invoiceRes = await fetch("/api/invoices", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -232,9 +233,36 @@ export function OrderDialog({
               invoiceDate: invoiceDate,
             }),
           });
+
+          if (!invoiceRes.ok) {
+            const invoiceError = await invoiceRes.json();
+            console.error("Failed to create invoice:", invoiceError);
+            throw new Error(invoiceError.message || "Failed to create invoice");
+          }
+
+          const createdInvoice = await invoiceRes.json();
+
+          // Upload invoice documents if any files selected (one at a time)
+          if (invoiceFiles.length > 0) {
+            for (const file of invoiceFiles) {
+              const formData = new FormData();
+              formData.append("file", file); // Backend expects 'file' not 'files'
+
+              const uploadRes = await fetch(`/api/invoices/${createdInvoice.id}/documents`, {
+                method: "POST",
+                body: formData,
+              });
+
+              if (!uploadRes.ok) {
+                const uploadError = await uploadRes.json();
+                console.error("Failed to upload document:", file.name, uploadError);
+                throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+              }
+            }
+          }
         } catch (err) {
-          console.error("Failed to create invoice:", err);
-          // Don't fail the whole operation if invoice creation fails
+          console.error("Failed to create invoice or upload documents:", err);
+          throw err; // Re-throw to show error to user
         }
       }
 
@@ -261,9 +289,14 @@ export function OrderDialog({
               <Input
                 id="refNumber"
                 value={formData.refNumber}
-                onChange={(e) =>
-                  setFormData({ ...formData, refNumber: e.target.value })
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData({ ...formData, refNumber: value });
+                  // Auto-update invoice number when creating new order
+                  if (!order && createInvoice) {
+                    setInvoiceNumber(value);
+                  }
+                }}
                 required
                 disabled={!!order}
               />
@@ -490,26 +523,48 @@ export function OrderDialog({
               </div>
 
               {createInvoice && (
-                <div className="grid grid-cols-2 gap-4 pl-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="invoiceNumber">Invoice Number *</Label>
-                    <Input
-                      id="invoiceNumber"
-                      placeholder="e.g., INV-2024-001"
-                      value={invoiceNumber}
-                      onChange={(e) => setInvoiceNumber(e.target.value)}
-                      required={createInvoice}
-                    />
+                <div className="space-y-4 pl-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="invoiceNumber">Invoice Number *</Label>
+                      <Input
+                        id="invoiceNumber"
+                        placeholder="e.g., INV-2024-001"
+                        value={invoiceNumber}
+                        onChange={(e) => setInvoiceNumber(e.target.value)}
+                        required={createInvoice}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invoiceDate">Invoice Date *</Label>
+                      <Input
+                        id="invoiceDate"
+                        type="date"
+                        value={invoiceDate}
+                        onChange={(e) => setInvoiceDate(e.target.value)}
+                        required={createInvoice}
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="invoiceDate">Invoice Date *</Label>
+                    <Label htmlFor="invoiceFiles">Invoice Documents (Optional)</Label>
                     <Input
-                      id="invoiceDate"
-                      type="date"
-                      value={invoiceDate}
-                      onChange={(e) => setInvoiceDate(e.target.value)}
-                      required={createInvoice}
+                      id="invoiceFiles"
+                      type="file"
+                      multiple
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          setInvoiceFiles(Array.from(e.target.files));
+                        }
+                      }}
+                      className="cursor-pointer"
                     />
+                    {invoiceFiles.length > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        {invoiceFiles.length} file(s) selected
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
