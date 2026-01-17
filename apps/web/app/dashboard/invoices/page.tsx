@@ -72,6 +72,13 @@ export default function InvoicesPage() {
       }
 
       const response: PaginatedResponse = await res.json();
+      
+      // Validate response data
+      if (!response.data || !Array.isArray(response.data)) {
+        console.error("Invalid response format:", response);
+        throw new Error("Invalid response format from server");
+      }
+      
       setInvoices(response.data);
       setMeta(response.meta);
       setError(null);
