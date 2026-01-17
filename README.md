@@ -168,7 +168,6 @@ app/
 - ✅ **Pagination & Search**: Efficient data handling with server-side pagination and real-time search
 - ✅ **Status Tracking**: Five-stage order lifecycle (Draft, Placed, In Transit, Delivered, Canceled)
 - ✅ **Inline Entity Creation**: Create suppliers and forwarders on-the-fly during order creation
-- ✅ **Order Items**: Multiple line items per order with SKU, quantity, price, and total
 - ✅ **Date Tracking**: Order date, dispatch date, estimated delivery, and actual delivery
 - ✅ **Reference Numbers**: Unique, auto-generated reference numbers for each order
 
@@ -375,7 +374,6 @@ This creates the following tables:
 - `suppliers` - Supplier records
 - `forwarders` - Freight forwarder records
 - `orders` - Order records
-- `order_items` - Line items for each order
 - `invoices` - Invoice records
 - `invoice_documents` - Document attachments
 
@@ -720,8 +718,7 @@ order-tracking/
 │   │   │   │   ├── orders.module.ts
 │   │   │   │   └── dto/
 │   │   │   │       ├── create-order.dto.ts
-│   │   │   │       ├── update-order.dto.ts
-│   │   │   │       └── order-item.dto.ts
+│   │   │   │       └── update-order.dto.ts
 │   │   │   │
 │   │   │   ├── invoices/             # Invoice & document management
 │   │   │   │   ├── invoices.controller.ts
@@ -885,7 +882,6 @@ model Order {
   actualDeliveryDate    DateTime?
   shipmentName          String?
   comments              String?
-  items                 OrderItem[] // One-to-many
   invoices              Invoice[]   // One-to-many
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
@@ -900,24 +896,6 @@ enum OrderStatus {
 }
 ```
 
-### Order Items Table
-
-Line items for each order.
-
-```prisma
-model OrderItem {
-  id        String   @id @default(uuid())
-  orderId   String   // Foreign key
-  order     Order    @relation(...)
-  sku       String?
-  itemName  String
-  quantity  Int
-  price     Decimal  @db.Decimal(12, 2)
-  total     Decimal  @db.Decimal(12, 2)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-```
 
 ### Invoices Table
 
@@ -962,7 +940,6 @@ User (standalone)
 
 Supplier ──< Order >── Forwarder
              │
-             ├──< OrderItem
              │
              └──< Invoice ──< InvoiceDocument
 ```
@@ -971,13 +948,12 @@ Supplier ──< Order >── Forwarder
 
 - **Supplier → Orders**: One-to-many (a supplier can have multiple orders)
 - **Forwarder → Orders**: One-to-many (a forwarder can handle multiple orders)
-- **Order → Order Items**: One-to-many (an order can have multiple line items)
 - **Order → Invoices**: One-to-many (an order can have multiple invoices)
 - **Invoice → Documents**: One-to-many (an invoice can have multiple documents)
 
 **Cascade Delete:**
 
-- Deleting an order deletes its items, invoices, and documents
+- Deleting an order deletes its invoices, and documents
 - Deleting an invoice deletes its documents
 - Suppliers/Forwarders are protected (cannot delete if they have orders)
 
@@ -1038,7 +1014,7 @@ POST /auth/login
 | GET | `/orders/:id` | Get single order by ID |
 | POST | `/orders` | Create new order |
 | PATCH | `/orders/:id` | Update existing order |
-| DELETE | `/orders/:id` | Delete order (and related items/invoices) |
+| DELETE | `/orders/:id` | Delete order (and related invoices) |
 | GET | `/orders/stats` | Get order statistics |
 
 **Get Orders (with pagination):**
@@ -1058,16 +1034,7 @@ POST /orders
   "status": "PLACED",
   "orderDate": "2026-01-13T00:00:00.000Z",
   "shipmentName": "Shipment A",
-  "comments": "Urgent delivery",
-  "items": [
-    {
-      "sku": "SKU001",
-      "itemName": "Product A",
-      "quantity": 10,
-      "price": 50.00,
-      "total": 500.00
-    }
-  ]
+  "comments": "Urgent delivery"
 }
 ```
 
