@@ -50,7 +50,8 @@ jobs:
             cd /www/wwwroot/ots.lionsfortco.com/order-tracking/apps/web
             rm -rf .next
             rm -rf node_modules/.cache
-            pnpm build
+            rm -rf .turbo
+            pnpm build --force
             
             # Restart services
             echo "🔄 Restarting services..."
