@@ -106,7 +106,9 @@ export function OrdersTable({ orders, onUpdate, onEdit }: OrdersTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
+          {orders.map((order) => {
+            try {
+              return (
             <TableRow key={order.id}>
               <TableCell className="font-medium">{order.refNumber}</TableCell>
               <TableCell>{order.supplier?.name || "—"}</TableCell>
@@ -160,7 +162,18 @@ export function OrdersTable({ orders, onUpdate, onEdit }: OrdersTableProps) {
                 </DropdownMenu>
               </TableCell>
             </TableRow>
-          ))}
+            );
+            } catch (error) {
+              console.error('[OrdersTable] Error rendering order:', order.id, error);
+              return (
+                <TableRow key={order.id}>
+                  <TableCell colSpan={7} className="text-destructive">
+                    Error displaying order {order.refNumber || order.id}
+                  </TableCell>
+                </TableRow>
+              );
+            }
+          })}
         </TableBody>
       </Table>
 
@@ -204,11 +217,11 @@ export function OrdersTable({ orders, onUpdate, onEdit }: OrdersTableProps) {
                       <div>{formatDate(selectedOrder.invoices[0]?.createdAt)}</div>
                     </div>
                     
-                    {selectedOrder.invoices[0]?.documents && Array.isArray(selectedOrder.invoices[0].documents) && selectedOrder.invoices[0].documents.length > 0 && (
+                    {selectedOrder.invoices?.[0]?.documents && Array.isArray(selectedOrder.invoices[0].documents) && selectedOrder.invoices[0].documents.length > 0 && (
                       <div className="pt-2 border-t">
                         <div className="font-medium text-sm mb-2">Documents ({selectedOrder.invoices[0].documents.length}):</div>
                         <div className="space-y-1">
-                          {selectedOrder.invoices[0].documents.map((doc: any) => (
+                          {(selectedOrder.invoices[0].documents || []).map((doc: any) => (
                             <button
                               key={doc.id}
                               onClick={() => {

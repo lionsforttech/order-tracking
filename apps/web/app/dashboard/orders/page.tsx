@@ -75,14 +75,31 @@ export default function OrdersPage() {
 
       const response: PaginatedResponse = await res.json();
       
-      // Validate response data
+      // Detailed validation and logging
+      console.log('[Orders] API Response:', JSON.stringify(response, null, 2));
+      
+      if (!response || typeof response !== 'object') {
+        console.error('[Orders] Invalid response type:', typeof response);
+        throw new Error("Invalid response from server");
+      }
+      
       if (!response.data || !Array.isArray(response.data)) {
-        console.error("Invalid response format:", response);
+        console.error('[Orders] Invalid data format:', response);
         throw new Error("Invalid response format from server");
       }
       
-      setOrders(response.data);
-      setMeta(response.meta);
+      // Sanitize orders data
+      const sanitizedOrders = response.data.map((order: any) => ({
+        ...order,
+        supplier: order.supplier || { name: 'Unknown' },
+        forwarder: order.forwarder || { name: 'Unknown' },
+        invoices: Array.isArray(order.invoices) ? order.invoices : []
+      }));
+      
+      console.log('[Orders] Sanitized orders count:', sanitizedOrders.length);
+      
+      setOrders(sanitizedOrders);
+      setMeta(response.meta || { total: 0, page: 1, limit: 10, totalPages: 0 });
       setError(null);
       isInitialLoad.current = false;
     } catch (err) {

@@ -19,37 +19,18 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          script: |
-            set -e
-            echo "🚀 Starting deployment..."
-            
+          script: |            
             cd /www/wwwroot/ots.lionsfortco.com/order-tracking
-            
-            # Reset any local changes and pull
             git fetch origin
-            git reset --hard origin/main
-            git clean -fd
-            
+            git reset --hard origin/main            
             pnpm install
-            
             cd apps/api
             pnpm exec prisma generate
             pnpm exec prisma migrate deploy
             pnpm build
-            
             cd ../web
             pnpm build
-            
-            # Restart services
-            pm2 delete order-tracking-api order-tracking-web 2>/dev/null || true
-            
-            cd /www/wwwroot/ots.lionsfortco.com/order-tracking/apps/api
-            pm2 start node --name "order-tracking-api" -- dist/src/main.js
-            
-            cd /www/wwwroot/ots.lionsfortco.com/order-tracking/apps/web
-            pm2 start npm --name "order-tracking-web" -- start
-            
+            cd /www/wwwroot/ots.lionsfortco.com/order-tracking
+            pm2 order-tracking-web
+            pm2 order-tracking-api
             pm2 save
-            pm2 list
-            
-            echo "✅ Deployment complete!"
