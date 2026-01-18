@@ -23,10 +23,20 @@ export async function GET(req: NextRequest) {
       ...(search && { search }),
     }).toString();
     
-    const res = await fetch(`${API_URL}/orders?${queryString}`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
-    });
+    const fetchWithRetry = async (retries = 1, delayMs = 300) => {
+      try {
+        return await fetch(`${API_URL}/orders?${queryString}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+      } catch (err) {
+        if (retries <= 0) throw err;
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        return fetchWithRetry(retries - 1, delayMs * 2);
+      }
+    };
+
+    const res = await fetchWithRetry(1, 300);
 
     if (!res.ok) {
       const error = await res.json();
