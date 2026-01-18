@@ -203,28 +203,32 @@ export default function OrdersPage() {
         )}
       </div>
 
-      <div className={searching ? "opacity-60 transition-opacity" : "transition-opacity"}>
+      {searching ? (
+        <div className="opacity-60">
+          <OrdersTable orders={orders} onUpdate={fetchOrders} onEdit={handleEdit} />
+        </div>
+      ) : (
         <OrdersTable orders={orders} onUpdate={fetchOrders} onEdit={handleEdit} />
-      </div>
+      )}
       
-      {meta.total > 0 && (
+      {meta && meta.total > 0 && (
         <Pagination
-          currentPage={meta.page}
-          totalPages={meta.totalPages}
-          totalItems={meta.total}
-          itemsPerPage={meta.limit}
-          onPageChange={(newPage) => {
-            setPage(newPage);
-          }}
+          currentPage={meta.page || 1}
+          totalPages={meta.totalPages || 1}
+          totalItems={meta.total || 0}
+          itemsPerPage={meta.limit || 10}
+          onPageChange={(newPage) => setPage(newPage)}
         />
       )}
 
-      <OrderDialog
-        open={dialogOpen}
-        onOpenChange={handleDialogClose}
-        order={selectedOrder}
-        onSuccess={fetchOrders}
-      />
+      {dialogOpen && (
+        <OrderDialog
+          open={dialogOpen}
+          onOpenChange={handleDialogClose}
+          order={selectedOrder}
+          onSuccess={fetchOrders}
+        />
+      )}
     </div>
   );
 }
