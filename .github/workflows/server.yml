@@ -21,9 +21,14 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |            
             cd /www/wwwroot/ots.lionsfortco.com/order-tracking
+            eval `ssh-agent -s`
+            ssh-add /root/.ssh/id_rsa
+            ssh -T git@github.com
+            git remote add origin git@github.com:lionsforttech/order-tracking.git
+            git reset --hard origin/main
             git fetch origin
-            git reset --hard origin/main   
-            git checkout main && git pull origin main         
+            git checkout main
+            git pull origin main      
             pnpm install
             cd apps/api
             pnpm exec prisma generate
