@@ -128,7 +128,11 @@ export default function OrdersClientPage() {
     }
   };
 
-  if (!mounted || loading) {
+  if (!mounted) {
+    return null;
+  }
+
+  if (loading) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
