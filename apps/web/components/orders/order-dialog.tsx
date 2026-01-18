@@ -55,10 +55,11 @@ export function OrderDialog({
   const [newForwarderName, setNewForwarderName] = useState("");
   const [creating, setCreating] = useState(false);
 
-  const [createInvoice, setCreateInvoice] = useState(false);
-  const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split("T")[0]);
-  const [invoiceFiles, setInvoiceFiles] = useState<File[]>([]);
+  // TEMPORARILY DISABLED FOR TESTING
+  // const [createInvoice, setCreateInvoice] = useState(false);
+  // const [invoiceNumber, setInvoiceNumber] = useState("");
+  // const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split("T")[0]);
+  // const [invoiceFiles, setInvoiceFiles] = useState<File[]>([]);
 
   const [formData, setFormData] = useState({
     refNumber: "",
@@ -221,50 +222,9 @@ export function OrderDialog({
 
       const savedOrder = await res.json();
 
+      // TEMPORARILY DISABLED FOR TESTING
       // If creating order and createInvoice is checked, create invoice
-      if (!order && createInvoice && invoiceNumber.trim()) {
-        try {
-          const invoiceRes = await fetch("/api/invoices", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              orderId: savedOrder.id,
-              invoiceNumber: invoiceNumber.trim(),
-              invoiceDate: invoiceDate,
-            }),
-          });
-
-          if (!invoiceRes.ok) {
-            const invoiceError = await invoiceRes.json();
-            console.error("Failed to create invoice:", invoiceError);
-            throw new Error(invoiceError.message || "Failed to create invoice");
-          }
-
-          const createdInvoice = await invoiceRes.json();
-
-          // Upload invoice documents if any files selected (one at a time)
-          if (invoiceFiles.length > 0) {
-            for (const file of invoiceFiles) {
-              const formData = new FormData();
-              formData.append("file", file); // Backend expects 'file' not 'files'
-
-              const uploadRes = await fetch(`/api/invoices/${createdInvoice.id}/documents`, {
-                method: "POST",
-                body: formData,
-              });
-
-              if (!uploadRes.ok) {
-                const uploadError = await uploadRes.json();
-                console.error("Failed to upload document:", file.name, uploadError);
-                throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
-              }
-            }
-          }
-        } catch (err) {
-          console.error("Failed to create invoice or upload documents:", err);
-          throw err; // Re-throw to show error to user
-        }
-      }
+      // if (!order && createInvoice && invoiceNumber.trim()) { ... }
 
       onSuccess();
       onOpenChange(false);
@@ -292,10 +252,10 @@ export function OrderDialog({
                 onChange={(e) => {
                   const value = e.target.value;
                   setFormData({ ...formData, refNumber: value });
-                  // Auto-update invoice number when creating new order
-                  if (!order && createInvoice) {
-                    setInvoiceNumber(value);
-                  }
+                  // DISABLED: Auto-update invoice number when creating new order
+                  // if (!order && createInvoice) {
+                  //   setInvoiceNumber(value);
+                  // }
                 }}
                 required
                 disabled={!!order}
@@ -547,24 +507,7 @@ export function OrderDialog({
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="invoiceFiles">Invoice Documents (Optional)</Label>
-                    <Input
-                      id="invoiceFiles"
-                      type="file"
-                      multiple
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                      onChange={(e) => {
-                        if (e.target.files) {
-                          setInvoiceFiles(Array.from(e.target.files));
-                        }
-                      }}
-                      className="cursor-pointer"
-                    />
-                    {invoiceFiles.length > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        {invoiceFiles.length} file(s) selected
-                      </p>
-                    )}
+                    {/* REMOVED: Invoice file upload temporarily disabled for testing */}
                   </div>
                 </div>
               )}
