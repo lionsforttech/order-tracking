@@ -58,7 +58,14 @@ export default function DashboardPage() {
         });
         
         // Get 5 most recent orders
-        setRecentOrders(orders.slice(0, 5));
+        setRecentOrders(
+          orders.slice(0, 5).map((order: any) => ({
+            ...order,
+            refNumber: order?.refNumber || "—",
+            status: order?.status || "DRAFT",
+            supplier: order?.supplier || { name: "—" },
+          }))
+        );
       }
     } catch (error) {
       console.error("Failed to fetch stats:", error);
@@ -214,11 +221,13 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-3">
                       <FileText className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-medium">{order.refNumber}</p>
-                        <p className="text-xs text-muted-foreground">{order.supplier.name}</p>
+                        <p className="text-sm font-medium">{order.refNumber || "—"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {order.supplier?.name || "—"}
+                        </p>
                       </div>
                     </div>
-                    <OrderStatusBadge status={order.status as any} />
+                    <OrderStatusBadge status={(order.status || "DRAFT") as any} />
                   </Link>
                 ))}
               </div>
