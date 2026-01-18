@@ -173,6 +173,10 @@ export default function OrdersPage() {
     );
   }
 
+  if (!orders || !Array.isArray(orders)) {
+    return <div>Loading orders...</div>;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -196,39 +200,26 @@ export default function OrdersPage() {
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
         />
-        {searching && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        )}
       </div>
 
-      {searching ? (
-        <div className="opacity-60">
-          <OrdersTable orders={orders} onUpdate={fetchOrders} onEdit={handleEdit} />
-        </div>
-      ) : (
-        <OrdersTable orders={orders} onUpdate={fetchOrders} onEdit={handleEdit} />
-      )}
+      <OrdersTable orders={orders} onUpdate={fetchOrders} onEdit={handleEdit} />
       
-      {meta && meta.total > 0 && (
+      {meta?.total > 0 && (
         <Pagination
-          currentPage={meta.page || 1}
-          totalPages={meta.totalPages || 1}
-          totalItems={meta.total || 0}
-          itemsPerPage={meta.limit || 10}
-          onPageChange={(newPage) => setPage(newPage)}
+          currentPage={meta.page}
+          totalPages={meta.totalPages}
+          totalItems={meta.total}
+          itemsPerPage={meta.limit}
+          onPageChange={setPage}
         />
       )}
 
-      {dialogOpen && (
-        <OrderDialog
-          open={dialogOpen}
-          onOpenChange={handleDialogClose}
-          order={selectedOrder}
-          onSuccess={fetchOrders}
-        />
-      )}
+      <OrderDialog
+        open={dialogOpen}
+        onOpenChange={handleDialogClose}
+        order={selectedOrder}
+        onSuccess={fetchOrders}
+      />
     </div>
   );
 }
