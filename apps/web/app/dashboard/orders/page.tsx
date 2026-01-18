@@ -2,14 +2,23 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Order } from "@/types/orders";
-import { OrdersTable } from "@/components/orders/orders-table";
-import { OrderDialog } from "@/components/orders/order-dialog";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+
+const OrdersTable = dynamic(
+  () => import("@/components/orders/orders-table").then((m) => m.OrdersTable),
+  { ssr: false }
+);
+
+const OrderDialog = dynamic(
+  () => import("@/components/orders/order-dialog").then((m) => m.OrderDialog),
+  { ssr: false }
+);
 
 interface PaginatedResponse {
   data: Order[];
